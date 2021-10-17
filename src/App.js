@@ -135,12 +135,22 @@ export default function App() {
         unitLength={width / gridDimensions.x}
         gridData={shuffledGridData}
       />
-
+      <br />
       <br />
       <button onClick={() => move("x", -1, gridDimensions)}>Move left</button>
       <button onClick={() => move("x", 1, gridDimensions)}>Move right</button>
       <button onClick={() => move("y", -1, gridDimensions)}>Move up</button>
       <button onClick={() => move("y", 1, gridDimensions)}>Move down</button>
+      <br />
+      <br />
+      <h1>Model</h1>
+      <PatternedGrid
+        name={"myCanvas3"}
+        gridDimensions={gridDimensions}
+        width={width}
+        unitLength={width / gridDimensions.x}
+        gridData={shuffledGridData}
+      />
     </>
   );
 }
