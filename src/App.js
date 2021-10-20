@@ -7,6 +7,9 @@ import {
   initialiseGrid,
   shuffleGridData
 } from "./utils";
+
+import { coverGrid } from "./utils/movement";
+import useMove from "./utils/hooks/useMove";
 import {
   DEFAULT_GRID_DIMENSION,
   DEFAULT_WIDTH,
@@ -15,30 +18,28 @@ import {
 import "./styles.css";
 
 export default function App() {
-  const [pattern, setPattern] = useState(rainbowKite);
   const [shuffledGridData, setShuffledGridData] = useState([]);
   const [orderMap, setOrderMap] = useState([]);
   const [gridData, setGridData] = useState(() =>
     initialiseGrid(DEFAULT_GRID_DIMENSION)
   );
 
-  const move = (axis, step, gridDims) => {
-    setPattern((pattern) =>
-      pattern.map((cell) => {
-        const newCell = { ...cell };
-        if (newCell[axis] + step + 1 > gridDims[axis] && step > 0) {
-          newCell[axis] = (newCell[axis] + step) % gridDims[axis];
-        } else if (newCell[axis] + step < 0 && step < 0) {
-          newCell[axis] =
-            gridDims[axis] + ((newCell[axis] + step) % gridDims[axis]);
-        } else {
-          newCell[axis] += step;
-        }
+  const [move, pattern] = useMove(rainbowKite);
 
-        return newCell;
-      })
-    );
+  const mover = (movements, gridDimensions, interval) => {
+    movements.forEach((movement, index) => {
+      const [axis, step] = movement;
+      const moveFunction = () => {
+        move(axis, step, gridDimensions);
+      };
+      setTimeout(moveFunction, interval * index);
+    });
   };
+
+  useEffect(() => {
+    const movements = coverGrid(DEFAULT_GRID_DIMENSION, 1);
+    mover(movements, DEFAULT_GRID_DIMENSION, 50);
+  }, []);
 
   useEffect(() => {
     const keydownHandler = (e) => {
