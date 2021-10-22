@@ -8,7 +8,7 @@ import {
   shuffleGridData
 } from "./utils";
 
-import { coverGrid } from "./utils/movement";
+import { coverGrid, moveRandomly } from "./utils/movement";
 import useMove from "./utils/hooks/useMove";
 import {
   DEFAULT_GRID_DIMENSION,
@@ -37,7 +37,8 @@ export default function App() {
   };
 
   useEffect(() => {
-    const movements = coverGrid(DEFAULT_GRID_DIMENSION, 1, 3);
+    // const movements = coverGrid(DEFAULT_GRID_DIMENSION, 1, 2);
+    const movements = moveRandomly(10, 500, 1);
     mover(movements, DEFAULT_GRID_DIMENSION, 100);
   }, []);
 
