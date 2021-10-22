@@ -37,8 +37,8 @@ export default function App() {
   };
 
   useEffect(() => {
-    const movements = coverGrid(DEFAULT_GRID_DIMENSION, 1);
-    mover(movements, DEFAULT_GRID_DIMENSION, 50);
+    const movements = coverGrid(DEFAULT_GRID_DIMENSION, 1, 3);
+    mover(movements, DEFAULT_GRID_DIMENSION, 100);
   }, []);
 
   useEffect(() => {

@@ -1,3 +1,3 @@
-export const DEFAULT_GRID_DIMENSION = { x: 20, y: 20 };
+export const DEFAULT_GRID_DIMENSION = { x: 6, y: 6 };
 export const DEFAULT_WIDTH = 250;
 export const DEFAULT_UNIT_LENGTH = DEFAULT_WIDTH / DEFAULT_GRID_DIMENSION.x;
