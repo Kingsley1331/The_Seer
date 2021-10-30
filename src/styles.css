@@ -3,6 +3,38 @@
   text-align: center;
 }
 
+.gridWrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+}
+
+.random {
+  display: flex;
+  flex-direction: column;
+  margin-left: 15px;
+  padding: 5px;
+}
+
+.grid {
+  /* border: 1px solid; */
+  margin-right: 15px;
+  padding: 5px;
+}
+.settingsWrapper {
+  display: flex;
+  flex-direction: row;
+}
+
+input {
+  margin-left: 10px;
+  margin-bottom: 5px;
+}
+
+.gridContainer {
+  margin-right: 15px;
+  margin-bottom: 50px;
+}
 /* .myCanvas1 {
   border: 1px solid blue;
 } */

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import PatternedGrid from "./components/PatternedGrid";
 import { rainbowKite } from "./consts/patterns";
 import {
@@ -10,11 +10,8 @@ import {
 
 import { coverGrid, moveRandomly } from "./utils/movement";
 import useMove from "./utils/hooks/useMove";
-import {
-  DEFAULT_GRID_DIMENSION,
-  DEFAULT_WIDTH,
-  DEFAULT_UNIT_LENGTH
-} from "./consts/config";
+
+import { DEFAULT_GRID_DIMENSION, DEFAULT_WIDTH } from "./consts/config";
 import "./styles.css";
 
 export default function App() {
@@ -24,52 +21,56 @@ export default function App() {
     initialiseGrid(DEFAULT_GRID_DIMENSION)
   );
 
-  const [move, pattern] = useMove(rainbowKite);
-
-  const mover = (movements, gridDimensions, interval) => {
-    movements.forEach((movement, index) => {
-      const [axis, step] = movement;
-      const moveFunction = () => {
-        move(axis, step, gridDimensions);
-      };
-      setTimeout(moveFunction, interval * index);
-    });
-  };
-
-  useEffect(() => {
-    // const movements = coverGrid(DEFAULT_GRID_DIMENSION, 1, 2);
-    const movements = moveRandomly(10, 500, 1);
-    mover(movements, DEFAULT_GRID_DIMENSION, 100);
-  }, []);
-
-  useEffect(() => {
-    const keydownHandler = (e) => {
-      switch (e.keyCode) {
-        case 37: // left
-          move("x", -1, gridDimensions);
-          break;
-        case 39: // right
-          move("x", 1, gridDimensions);
-          break;
-        case 38: //up
-          move("y", -1, gridDimensions);
-          break;
-        case 40: // down
-          move("y", 1, gridDimensions);
-          break;
-        default:
-          null;
-      }
-    };
-
-    document.addEventListener("keydown", keydownHandler);
-
-    return () => document.removeEventListener("keydown", keydownHandler);
+  const [coverageType, setCoverageType] = useState("Coverage");
+  const [gridUnits, setGridUnits] = useState(DEFAULT_GRID_DIMENSION);
+  const [coverSettings, setCoverSettings] = useState({ reps: 1, lines: 1 });
+  const [randomPathSettings, setRandomPathSettings] = useState({
+    pathLength: 5,
+    numOfSteps: 10
   });
+  const [move, pattern] = useMove(rainbowKite);
+  const [playing, setPlaying] = useState(false);
 
-  const gridDimensions = DEFAULT_GRID_DIMENSION;
+  const mover = useCallback(
+    (movements, gridDimensions, interval) => {
+      movements.forEach((movement, index) => {
+        const [axis, step] = movement;
+        const moveFunction = () => {
+          move(axis, step, gridDimensions);
+        };
+        setTimeout(moveFunction, interval * index);
+      });
+    },
+    [move]
+  );
+
+  useEffect(() => {
+    let movements = [];
+    if (playing) {
+      if (coverageType === "Coverage") {
+        movements = coverGrid(gridUnits, 1, coverSettings.reps);
+      }
+      if (coverageType === "Random") {
+        movements = moveRandomly(
+          randomPathSettings.pathLength,
+          randomPathSettings.numOfSteps,
+          1
+        );
+      }
+      mover(movements, gridUnits, 1000);
+    }
+  }, [
+    gridUnits,
+    coverSettings.reps,
+    playing,
+    coverageType,
+    randomPathSettings.pathLength,
+    randomPathSettings.numOfSteps
+  ]);
+
+  const gridDimensions = gridUnits;
   const width = DEFAULT_WIDTH;
-  const unitLength = DEFAULT_UNIT_LENGTH;
+  const unitLength = width / gridDimensions.x;
 
   const {
     patternUnitwidth,
@@ -100,6 +101,10 @@ export default function App() {
     return randomisedGridData;
   };
 
+  const togglePlaying = () => {
+    setPlaying((state) => !state);
+  };
+
   useEffect(() => {
     const orderMap = shuffleGridData(gridData);
 
@@ -114,45 +119,176 @@ export default function App() {
 
   return (
     <>
-      <PatternedGrid
-        name={"myCanvas"}
-        gridDimensions={gridDimensions}
-        width={width}
-        unitLength={width / gridDimensions.x}
-        gridData={gridData}
-      />
+      <div className={"gridWrapper"}>
+        <div className={"gridContainer"}>
+          <h3>Display</h3>
+          <PatternedGrid
+            name={"myCanvas"}
+            gridDimensions={gridDimensions}
+            width={width}
+            unitLength={width / gridDimensions.x}
+            gridData={gridData}
+          />
+        </div>
+        <div className={"gridContainer"}>
+          <h3>Scrambled</h3>
+          <PatternedGrid
+            name={"myCanvas2"}
+            gridDimensions={gridDimensions}
+            width={width}
+            unitLength={width / gridDimensions.x}
+            gridData={shuffledGridData}
+          />
+        </div>
+        <div className={"gridContainer"}>
+          <h3>Model</h3>
+          <PatternedGrid
+            name={"myCanvas3"}
+            gridDimensions={gridDimensions}
+            width={width}
+            unitLength={width / gridDimensions.x}
+            gridData={shuffledGridData}
+          />
+        </div>
+        <div className={"gridContainer"}>
+          <h3>Pattern</h3>
+          <PatternedGrid
+            name={"myCanvas1"}
+            gridDimensions={{ x: patternUnitwidth, y: patternUnitHeight }}
+            width={patternUnitwidth * unitLength}
+            unitLength={unitLength}
+            gridData={patternGridData}
+          />
+        </div>
+      </div>
+      <button onClick={togglePlaying}>{playing ? "Pause" : "Play"}</button>
+      <br />
+      <br />
+      <div className="type">
+        <input
+          checked={coverageType === "Coverage"}
+          id="coverage"
+          type="radio"
+          value="Coverage"
+          name="coverage_type"
+          onChange={(e) => {
+            console.log(e.target.value);
+            setCoverageType(e.target.value);
+          }}
+        />
+        <label htmlFor="coverage">Coverage</label>
+        <input
+          checked={coverageType === "Random"}
+          id="random"
+          type="radio"
+          value="Random"
+          name="coverage_type"
+          onChange={(e) => {
+            console.log(e.target.value);
+            setCoverageType(e.target.value);
+          }}
+        />
+        <label htmlFor="random">Random</label>
+      </div>
 
-      <PatternedGrid
-        name={"myCanvas1"}
-        gridDimensions={{ x: patternUnitwidth, y: patternUnitHeight }}
-        width={patternUnitwidth * unitLength}
-        unitLength={unitLength}
-        gridData={patternGridData}
-      />
+      <div className={"settingsWrapper"}>
+        <div className={"grid"}>
+          <h2>Grid settings</h2>
+          <div>
+            x
+            <input
+              type="number"
+              onChange={(e) => {
+                console.log(e.target.value);
+                setGridUnits((units) => ({ ...units, x: e.target.value }));
+              }}
+              value={gridUnits.x}
+            />
+          </div>
+          <div>
+            y
+            <input
+              type="number"
+              onChange={(e) => {
+                console.log(e.target.value);
+                setGridUnits((units) => ({ ...units, y: e.target.value }));
+              }}
+              value={gridUnits.y}
+            />
+          </div>
+        </div>
+        {coverageType === "Coverage" && (
+          <div className={"cover"}>
+            <h2>Grid cover</h2>
+            <div>
+              reps
+              <input
+                type="number"
+                onChange={(e) => {
+                  console.log(e.target.value);
+                  setCoverSettings((settings) => ({
+                    ...settings,
+                    reps: e.target.value
+                  }));
+                }}
+                value={coverSettings.reps}
+              />
+            </div>
+            <div>
+              lines
+              <input
+                type="number"
+                onChange={(e) => {
+                  console.log(e.target.value);
+                  setCoverSettings((settings) => ({
+                    ...settings,
+                    lines: e.target.value
+                  }));
+                }}
+                value={coverSettings.lines}
+              />
+            </div>
+          </div>
+        )}
 
-      <PatternedGrid
-        name={"myCanvas2"}
-        gridDimensions={gridDimensions}
-        width={width}
-        unitLength={width / gridDimensions.x}
-        gridData={shuffledGridData}
-      />
+        {coverageType === "Random" && (
+          <div className={"random"}>
+            <h2>Random motion</h2>
+            <div className={"settingsContainer"}>
+              <div>
+                path length
+                <input
+                  type="number"
+                  onChange={(e) => {
+                    console.log(e.target.value);
+                    setRandomPathSettings((settings) => ({
+                      ...settings,
+                      pathLength: e.target.value
+                    }));
+                  }}
+                  value={randomPathSettings.pathLength}
+                />
+              </div>
+              <div>
+                No. of steps
+                <input
+                  type="number"
+                  onChange={(e) => {
+                    console.log(e.target.value);
+                    setRandomPathSettings((settings) => ({
+                      ...settings,
+                      numOfSteps: e.target.value
+                    }));
+                  }}
+                  value={randomPathSettings.numOfSteps}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
       <br />
-      <br />
-      <button onClick={() => move("x", -1, gridDimensions)}>Move left</button>
-      <button onClick={() => move("x", 1, gridDimensions)}>Move right</button>
-      <button onClick={() => move("y", -1, gridDimensions)}>Move up</button>
-      <button onClick={() => move("y", 1, gridDimensions)}>Move down</button>
-      <br />
-      <br />
-      <h1>Model</h1>
-      <PatternedGrid
-        name={"myCanvas3"}
-        gridDimensions={gridDimensions}
-        width={width}
-        unitLength={width / gridDimensions.x}
-        gridData={shuffledGridData}
-      />
+      <button>Apply Changes</button>
     </>
   );
 }

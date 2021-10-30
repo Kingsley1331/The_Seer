@@ -1,10 +1,10 @@
 import { useState } from "react";
-// import { rainbowKite } from "../../consts/patterns";
 
 export default function useMove(initialPattern) {
   const [pattern, setPattern] = useState(initialPattern);
 
   const move = (axis, step, gridDims) => {
+    console.log({ axis, step, gridDims });
     setPattern((pattern) =>
       pattern.map((cell) => {
         const newCell = { ...cell };
@@ -22,5 +22,5 @@ export default function useMove(initialPattern) {
     );
   };
 
-  return [move, pattern];
+  return [move, pattern, setPattern];
 }
