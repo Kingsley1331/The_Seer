@@ -2,7 +2,7 @@
 
 Created with CodeSandbox
 
-## TODO
+### TODO
 
 - Fix togglePlay function
 - Make the lines property configurable when coverageType === "Coverage"
