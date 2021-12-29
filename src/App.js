@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import PatternedGrid from "./components/PatternedGrid";
 import { rainbowKite } from "./consts/patterns";
 import {
@@ -16,6 +16,7 @@ import "./styles.css";
 
 export default function App() {
   const [shuffledGridData, setShuffledGridData] = useState([]);
+  const [movements, setMovements] = useState([]);
   const [orderMap, setOrderMap] = useState([]);
   const [gridData, setGridData] = useState(() =>
     initialiseGrid(DEFAULT_GRID_DIMENSION)
@@ -26,47 +27,69 @@ export default function App() {
   const [coverSettings, setCoverSettings] = useState({ reps: 1, lines: 1 });
   const [randomPathSettings, setRandomPathSettings] = useState({
     pathLength: 5,
-    numOfSteps: 10
+    numOfSteps: 200
   });
+  const [period, setPeriod] = useState(0);
+
   const [move, pattern] = useMove(rainbowKite);
+
   const [playing, setPlaying] = useState(false);
 
-  const mover = useCallback(
-    (movements, gridDimensions, interval) => {
-      movements.forEach((movement, index) => {
-        const [axis, step] = movement;
-        const moveFunction = () => {
-          move(axis, step, gridDimensions);
-        };
-        setTimeout(moveFunction, interval * index);
-      });
-    },
-    [move]
-  );
-
-  useEffect(() => {
-    let movements = [];
-    if (playing) {
+  const addMovements = useCallback(() => {
+    if (!movements.length) {
       if (coverageType === "Coverage") {
-        movements = coverGrid(gridUnits, 1, coverSettings.reps);
+        setMovements(coverGrid(gridUnits, 1, coverSettings.reps));
       }
       if (coverageType === "Random") {
-        movements = moveRandomly(
-          randomPathSettings.pathLength,
-          randomPathSettings.numOfSteps,
-          1
+        setMovements(
+          moveRandomly(
+            randomPathSettings.pathLength,
+            randomPathSettings.numOfSteps,
+            1
+          )
         );
       }
-      mover(movements, gridUnits, 1000);
     }
   }, [
     gridUnits,
     coverSettings.reps,
-    playing,
     coverageType,
     randomPathSettings.pathLength,
-    randomPathSettings.numOfSteps
+    randomPathSettings.numOfSteps,
+    movements
   ]);
+
+  const moveFunction = useCallback(function () {
+    setMovements((moves) => {
+      if (moves && moves.length) {
+        const [, ...rest] = moves;
+        return rest;
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (movements && movements.length) {
+      const [axis, step] = movements[0];
+      move(axis, step, gridUnits);
+    }
+    if (!movements.length) {
+      clearInterval(t1.current);
+      setPlaying(false);
+    }
+  }, [movements, gridUnits]);
+
+  const t1 = useRef(null);
+  const mover = useCallback(() => {
+    addMovements();
+    if (!playing) {
+      setPlaying(true);
+      t1.current = setInterval(moveFunction, period);
+    } else {
+      setPlaying(false);
+      clearInterval(t1.current);
+    }
+  }, [playing, addMovements, moveFunction, period]);
 
   const gridDimensions = gridUnits;
   const width = DEFAULT_WIDTH;
@@ -101,10 +124,6 @@ export default function App() {
     return randomisedGridData;
   };
 
-  const togglePlaying = () => {
-    setPlaying((state) => !state);
-  };
-
   useEffect(() => {
     const orderMap = shuffleGridData(gridData);
 
@@ -116,6 +135,11 @@ export default function App() {
 
     setShuffledGridData(shuffledGridData);
   }, [gridData, orderMap]);
+
+  const onChangeCoverageType = useCallback((e) => {
+    setCoverageType(e.target.value);
+    setMovements([]);
+  }, []);
 
   return (
     <>
@@ -161,7 +185,8 @@ export default function App() {
           />
         </div>
       </div>
-      <button onClick={togglePlaying}>{playing ? "Pause" : "Play"}</button>
+      <button onClick={mover}>{playing ? "Pause" : "Play"}</button>
+
       <br />
       <br />
       <div className="type">
@@ -171,10 +196,7 @@ export default function App() {
           type="radio"
           value="Coverage"
           name="coverage_type"
-          onChange={(e) => {
-            console.log(e.target.value);
-            setCoverageType(e.target.value);
-          }}
+          onChange={onChangeCoverageType}
         />
         <label htmlFor="coverage">Coverage</label>
         <input
@@ -183,10 +205,7 @@ export default function App() {
           type="radio"
           value="Random"
           name="coverage_type"
-          onChange={(e) => {
-            console.log(e.target.value);
-            setCoverageType(e.target.value);
-          }}
+          onChange={onChangeCoverageType}
         />
         <label htmlFor="random">Random</label>
       </div>
@@ -199,7 +218,7 @@ export default function App() {
             <input
               type="number"
               onChange={(e) => {
-                console.log(e.target.value);
+                // console.log(e.target.value);
                 setGridUnits((units) => ({ ...units, x: e.target.value }));
               }}
               value={gridUnits.x}
@@ -210,7 +229,7 @@ export default function App() {
             <input
               type="number"
               onChange={(e) => {
-                console.log(e.target.value);
+                // console.log(e.target.value);
                 setGridUnits((units) => ({ ...units, y: e.target.value }));
               }}
               value={gridUnits.y}
@@ -225,7 +244,7 @@ export default function App() {
               <input
                 type="number"
                 onChange={(e) => {
-                  console.log(e.target.value);
+                  // console.log(e.target.value);
                   setCoverSettings((settings) => ({
                     ...settings,
                     reps: e.target.value
@@ -239,7 +258,7 @@ export default function App() {
               <input
                 type="number"
                 onChange={(e) => {
-                  console.log(e.target.value);
+                  // console.log(e.target.value);
                   setCoverSettings((settings) => ({
                     ...settings,
                     lines: e.target.value
@@ -260,7 +279,7 @@ export default function App() {
                 <input
                   type="number"
                   onChange={(e) => {
-                    console.log(e.target.value);
+                    // console.log(e.target.value);
                     setRandomPathSettings((settings) => ({
                       ...settings,
                       pathLength: e.target.value
@@ -274,7 +293,7 @@ export default function App() {
                 <input
                   type="number"
                   onChange={(e) => {
-                    console.log(e.target.value);
+                    // console.log(e.target.value);
                     setRandomPathSettings((settings) => ({
                       ...settings,
                       numOfSteps: e.target.value

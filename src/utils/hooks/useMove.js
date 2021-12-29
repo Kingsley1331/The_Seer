@@ -4,7 +4,6 @@ export default function useMove(initialPattern) {
   const [pattern, setPattern] = useState(initialPattern);
 
   const move = (axis, step, gridDims) => {
-    console.log({ axis, step, gridDims });
     setPattern((pattern) =>
       pattern.map((cell) => {
         const newCell = { ...cell };
@@ -16,7 +15,6 @@ export default function useMove(initialPattern) {
         } else {
           newCell[axis] += step;
         }
-
         return newCell;
       })
     );
