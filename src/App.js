@@ -114,6 +114,7 @@ export default function App() {
   }, [patternDisplay, gridUnits]);
 
   const reset = useCallback(() => {
+    console.log("Resetting");
     setParternDisplay(pattern);
     resetGrid();
     setMovements([]);
@@ -252,6 +253,7 @@ export default function App() {
               onChange={(e) => {
                 // console.log(e.target.value);
                 setGridUnits((units) => ({ ...units, x: e.target.value }));
+                // setTimeout(() => reset(), 1000);
               }}
               value={gridUnits.x}
             />
@@ -263,6 +265,7 @@ export default function App() {
               onChange={(e) => {
                 // console.log(e.target.value);
                 setGridUnits((units) => ({ ...units, y: e.target.value }));
+                // setTimeout(() => reset(), 1000);
               }}
               value={gridUnits.y}
             />
@@ -337,6 +340,16 @@ export default function App() {
             </div>
           </div>
         )}
+      </div>
+      <div>
+        Interval (ms)
+        <input
+          type="number"
+          onChange={(e) => {
+            setPeriod(e.target.value);
+          }}
+          value={period}
+        />
       </div>
       <br />
       <button>Apply Changes</button>
