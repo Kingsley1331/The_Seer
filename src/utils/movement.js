@@ -7,17 +7,21 @@ const moveOnPath = (length, axis, stepSize) => {
 };
 
 /**NOTE: Step sizes other 1 may not work with this function */
-export const coverGrid = (gridDimensions, stepSize, repitions = 1) => {
+export const coverGrid = (
+  gridDimensions,
+  stepSize,
+  repitions = 1,
+  lineCount = 1
+) => {
   const { x: gridX, y: gridY } = gridDimensions;
   let movements = [];
 
   const gridCoverer = (mvs) => {
-    const lineCoverage = 1;
     for (let j = 0; j < gridY; j++) {
       mvs = [
         ...mvs,
-        ...moveOnPath(lineCoverage * gridX, "x", stepSize),
-        ...moveOnPath(lineCoverage * gridX, "x", -stepSize),
+        ...moveOnPath(lineCount * gridX, "x", stepSize),
+        ...moveOnPath(lineCount * gridX, "x", -stepSize),
         ["y", stepSize]
       ];
     }
@@ -25,8 +29,8 @@ export const coverGrid = (gridDimensions, stepSize, repitions = 1) => {
     for (let j = 0; j < gridX; j++) {
       mvs = [
         ...mvs,
-        ...moveOnPath(lineCoverage * gridY, "y", stepSize),
-        ...moveOnPath(lineCoverage * gridY, "y", -stepSize),
+        ...moveOnPath(lineCount * gridY, "y", stepSize),
+        ...moveOnPath(lineCount * gridY, "y", -stepSize),
         ["x", stepSize]
       ];
     }

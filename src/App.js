@@ -29,7 +29,7 @@ export default function App() {
     pathLength: 5,
     numOfSteps: 200
   });
-  const [period, setPeriod] = useState(0);
+  const [period, setPeriod] = useState(100);
 
   const [move, pattern] = useMove(rainbowKite);
 
@@ -38,7 +38,9 @@ export default function App() {
   const addMovements = useCallback(() => {
     if (!movements.length) {
       if (coverageType === "Coverage") {
-        setMovements(coverGrid(gridUnits, 1, coverSettings.reps));
+        setMovements(
+          coverGrid(gridUnits, 1, coverSettings.reps, coverSettings.lines)
+        );
       }
       if (coverageType === "Random") {
         setMovements(
@@ -53,6 +55,7 @@ export default function App() {
   }, [
     gridUnits,
     coverSettings.reps,
+    coverSettings.lines,
     coverageType,
     randomPathSettings.pathLength,
     randomPathSettings.numOfSteps,
