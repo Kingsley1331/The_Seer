@@ -31,9 +31,13 @@ export default function App() {
   });
   const [period, setPeriod] = useState(100);
 
-  const [move, pattern] = useMove(rainbowKite);
+  const [pattern, setPattern] = useState(rainbowKite);
+
+  const [move, patternDisplay, setParternDisplay] = useMove(pattern);
 
   const [playing, setPlaying] = useState(false);
+
+  const t1 = useRef(null);
 
   const addMovements = useCallback(() => {
     if (!movements.length) {
@@ -71,6 +75,16 @@ export default function App() {
     });
   }, []);
 
+  const removeOrderMap = useCallback(() => {
+    setOrderMap([]);
+  }, []);
+
+  const createOrderMap = useCallback(() => {
+    const orderMap = shuffleGridData(gridData);
+
+    setOrderMap(orderMap);
+  }, [setOrderMap, gridData]);
+
   useEffect(() => {
     if (movements && movements.length) {
       const [axis, step] = movements[0];
@@ -82,7 +96,6 @@ export default function App() {
     }
   }, [movements, gridUnits]);
 
-  const t1 = useRef(null);
   const mover = useCallback(() => {
     addMovements();
     if (!playing) {
@@ -94,6 +107,28 @@ export default function App() {
     }
   }, [playing, addMovements, moveFunction, period]);
 
+  const resetGrid = useCallback(() => {
+    let gridData2 = initialiseGrid(gridUnits);
+    gridData2 = addPattern(gridData2, patternDisplay);
+    setGridData(gridData2);
+  }, [patternDisplay, gridUnits]);
+
+  const reset = useCallback(() => {
+    setParternDisplay(pattern);
+    resetGrid();
+    setMovements([]);
+    removeOrderMap();
+    createOrderMap();
+  }, [
+    resetGrid,
+    setMovements,
+    createOrderMap,
+    removeOrderMap,
+    pattern,
+    setParternDisplay
+  ]);
+  // console.log('Num of moves', movements.length);
+
   const gridDimensions = gridUnits;
   const width = DEFAULT_WIDTH;
   const unitLength = width / gridDimensions.x;
@@ -104,12 +139,8 @@ export default function App() {
   } = calculatePatternUnitDimensions(rainbowKite);
 
   useEffect(() => {
-    let gridData2 = initialiseGrid(gridDimensions);
-
-    gridData2 = addPattern(gridData2, pattern);
-
-    setGridData(gridData2);
-  }, [pattern, gridDimensions]);
+    resetGrid();
+  }, [resetGrid]);
 
   /**Remove duplication */
   let patternGridData = initialiseGrid(gridDimensions);
@@ -128,10 +159,8 @@ export default function App() {
   };
 
   useEffect(() => {
-    const orderMap = shuffleGridData(gridData);
-
-    setOrderMap(orderMap);
-  }, []);
+    createOrderMap();
+  }, []); // dependency array should be empty
 
   useEffect(() => {
     const shuffledGridData = randomiseGridData(gridData, orderMap);
@@ -189,7 +218,7 @@ export default function App() {
         </div>
       </div>
       <button onClick={mover}>{playing ? "Pause" : "Play"}</button>
-
+      <button onClick={reset}>Reset</button>
       <br />
       <br />
       <div className="type">
