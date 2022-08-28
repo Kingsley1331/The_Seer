@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import PatternedGrid from "./components/PatternedGrid";
 import { rainbowKite } from "./consts/patterns";
+import DEFAULT_MAP from "./consts/orderMaps";
 import {
   calculatePatternUnitDimensions,
   addPattern,
@@ -17,7 +18,8 @@ import "./styles.css";
 export default function App() {
   const [shuffledGridData, setShuffledGridData] = useState([]);
   const [movements, setMovements] = useState([]);
-  const [orderMap, setOrderMap] = useState([]);
+  const [orderMap, setOrderMap] = useState(DEFAULT_MAP);
+  // const [orderMap, setOrderMap] = useState([]);
   const [gridData, setGridData] = useState(() =>
     initialiseGrid(DEFAULT_GRID_DIMENSION)
   );
@@ -160,7 +162,9 @@ export default function App() {
   };
 
   useEffect(() => {
-    createOrderMap();
+    if(orderMap.length === 0){
+      createOrderMap();
+    }
   }, []); // dependency array should be empty
 
   useEffect(() => {
@@ -173,6 +177,9 @@ export default function App() {
     setCoverageType(e.target.value);
     setMovements([]);
   }, []);
+
+// console.log('orderMap', orderMap.toString())
+// console.log('gridData', gridData)
 
   return (
     <>
